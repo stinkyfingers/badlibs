@@ -10,6 +10,8 @@ import (
 
 	"github.com/stinkyfingers/badlibs/controllers/application"
 	"github.com/stinkyfingers/badlibs/controllers/libscontroller"
+	"github.com/stinkyfingers/badlibs/controllers/partsofspeechcontroller"
+	"github.com/stinkyfingers/badlibs/controllers/ratingscontroller"
 )
 
 var (
@@ -31,6 +33,8 @@ func main() {
 	rh.AddRoute(regexp.MustCompile("/lib/delete"), http.HandlerFunc(libscontroller.DeleteLib))
 	rh.AddRoute(regexp.MustCompile("/lib/get"), http.HandlerFunc(libscontroller.GetLib))
 	rh.AddRoute(regexp.MustCompile("/lib/find"), http.HandlerFunc(libscontroller.FindLib))
+	rh.AddRoute(regexp.MustCompile("/ratings/find"), http.HandlerFunc(ratingscontroller.FindRatings))
+	rh.AddRoute(regexp.MustCompile("/partsofspeech/find"), http.HandlerFunc(partsofspeechcontroller.FindPartsOfSpeech))
 
 	//APP
 	rh.AddRoute(regexp.MustCompile("/.*"), http.HandlerFunc(application.Application))

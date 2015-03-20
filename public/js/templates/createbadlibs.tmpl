@@ -4,10 +4,16 @@
 
 	<label for="title">Title:</label>
 	<input type="text" name="title" ng-model="lib.title">
-	<label for="text">Title:</label>
-	<input type="text" name="text" ng-model="lib.text">
-	<label for="rating">Title:</label>
-	<input type="text" name="rating" ng-model="lib.rating">
+	<label for="text">Text:</label>
+	<textarea name="text" ng-model="lib.text"></textarea>
+	<label for="rate">Rating:</label>
+	<select name="rate" ng-model="lib.rating" ng-options="rating.value for rating in allRatings">
+	</select>
 	<input type="submit" value="Submit" ng-click="createLib()">
 
 </form>
+
+<div class="partsOfSpeech">
+	<button ng-repeat="partOfSpeech in allPartsOfSpeech" ng-click="append(partOfSpeech)">[[partOfSpeech.value]]</button>
+
+</div>
