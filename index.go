@@ -39,7 +39,11 @@ func main() {
 	//APP
 	rh.AddRoute(regexp.MustCompile("/.*"), http.HandlerFunc(application.Application))
 
-	err := http.ListenAndServe(":"+os.Getenv("PORT"), &rh)
+	p := os.Getenv("PORT")
+	if p == "" {
+		p = "8080"
+	}
+	err := http.ListenAndServe(":"+p, &rh)
 	if err != nil {
 		log.Print(err)
 	}
