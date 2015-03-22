@@ -5,6 +5,7 @@ import (
 	"github.com/stinkyfingers/badlibs/models/libs"
 	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 )
@@ -41,6 +42,7 @@ func CreateLib(w http.ResponseWriter, r *http.Request) {
 	}
 	err = json.Unmarshal(requestBody, &l)
 	if err != nil {
+		log.Print(err)
 		http.Error(w, err.Error(), 400)
 		return
 	}

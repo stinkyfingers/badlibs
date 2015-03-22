@@ -11,9 +11,11 @@ define(["app", "services/badlibs"],function(app){
 		$scope.allLibs = badlibsFactory.find($scope.lib).
 			then(function(data){
 				$scope.allLibs = data;
+				$scope.libsView = $scope.allLibs;
 			},function(err){
 				$scope.err = err;
 			});
+		
 
 		$scope.allPartsOfSpeech =  badlibsFactory.findPartsOfSpeech($scope.partOfSpeech).
 			then(function(data){
@@ -28,23 +30,31 @@ define(["app", "services/badlibs"],function(app){
 			},function(err){
 				$scope.err = err;
 			});
+		$scope.clear = function(){
+			$scope.lib = {};
+		}
 
-		$scope.createLib = function(){
+
+		$scope.createLib = function(lib){
 			//TODO
+			badlibsFactory.createLib(lib).then(function(data){
+				$scope.lib = data;
+			},function(err){
+				$scope.err = err;
+			});
 		}
 
 		$scope.append = function(partOfSpeech){
-			console.log(partOfSpeech);
 			textarea = document.querySelector("#libtext");
-
-			//TODO - insert at carer position instead of end
+			//position of cursor
 			caret = getCaret(textarea);
-	
-			textarea.value += (" *"+ partOfSpeech.code+"* ");
-			textarea.focus();
-			
 
-	
+			beginning = textarea.value.substr(0,caret);
+			end = textarea.value.substr(caret, textarea.value.length);
+
+			$scope.lib.text = textarea.value = beginning + (" (("+ partOfSpeech.value+")) ") + end;
+
+			textarea.focus();
 		}
 
 
@@ -79,6 +89,19 @@ define(["app", "services/badlibs"],function(app){
 		    return rc.text.length - add_newlines; 
 		  }  
 		  return 0; 
+		}
+
+		$scope.selectbyRating = function(rating){
+			$scope.libsView = [];
+			if (rating != null){
+				angular.forEach($scope.allLibs,function(v,k){
+					if (v.rating == rating.value){
+						$scope.libsView.push(v);
+					}
+				});
+			}else{
+				$scope.libsView = $scope.allLibs;
+			}
 		}
 
 	});
