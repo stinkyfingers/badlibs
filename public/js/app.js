@@ -28,6 +28,11 @@ define(['angularAMD', 'angular-route', 'angularCookies'], function (angularAMD) 
 				controller: 'badlibsController',
 				controllerUrl: 'controllers/badlibs'
 			})).
+			when("/badlibs/:id",angularAMD.route({
+				templateUrl: '/public/js/templates/playbadlibs.tmpl',
+				controller: 'badlibsController',
+				controllerUrl: 'controllers/badlibs'
+			})).
 			when("/badlibs",angularAMD.route({
 				templateUrl: '/public/js/templates/badlibs.tmpl',
 				controller: 'badlibsController',

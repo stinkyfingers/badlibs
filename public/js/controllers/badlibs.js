@@ -2,11 +2,52 @@
 define(["app", "services/badlibs"],function(app){
 
 
-	app.controller("badlibsController", function($scope, badlibsFactory, $rootScope){
+	app.controller("badlibsController", function($scope, badlibsFactory, $rootScope, $route){
 		$scope.test = "Hello";
 		$scope.lib = {};
 		$scope.partOfSpeech = {};
 		$scope.rating = {};
+		$scope.posArray = [];
+		$scope.pos = {};
+		$scope.objArray = [];
+
+
+		params = $route.current.params;
+
+		if ((typeof(params.id) != "undefined") && (params.id != "")){
+			$scope.lib._id = params.id;
+			badlibsFactory.find($scope.lib).then(function(data){
+				$scope.lib = data[0];
+				setup($scope.lib);
+			},function(err){
+				$scope.err = err;
+			});
+		}
+
+		setup = function(lib){
+			var re = /\(\([A-Za-z]*\)\)/gi;
+			$scope.posArray = lib.text.match(re);
+			$scope.objArray = new Array($scope.posArray.length);
+			angular.forEach($scope.posArray,function(v,k){
+				var pos = v.replace("((","");
+				pos = pos.replace("))","");
+				$scope.posArray[k] = pos;
+				$scope.objArray[k] = {};
+				$scope.objArray[k].pos = pos;
+
+			})
+		}
+
+		$scope.submitPos = function(){
+			console.log($scope.lib);
+			var re = /\(\([A-Za-z]*\)\)/gi;
+			var newString = $scope.lib.text.replace(re, replacer);
+//TODO now what?
+		}
+
+		replacer = function($scope.lib.text, ){
+
+		}
 
 		$scope.allLibs = badlibsFactory.find($scope.lib).
 			then(function(data){
