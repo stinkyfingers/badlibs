@@ -1,8 +1,8 @@
 $fonts: arial, Helvetica;
-$pink: #e4c;
-$grey: #222;
+$primary: #aa5739;
+$secondary: #aa7939;
+$tertiary: #88ad39;
 $white: #fff;
-$offWhite: #eee;
 
 
 html{
@@ -15,7 +15,7 @@ body{
 	#header{
 		margin: 0 0 .1em 0;
 		padding:.4em 0 0 0;
-		background-color: $pink;
+		background-color: $primary;
 		width:100%;
 		.mainHeader{
 			text-align: center;
@@ -25,23 +25,23 @@ body{
 		}
 	}
 	
-	color:$pink;
+	color:$primary;
 	a{
 		text-decoration: none;
 	}
 	a:link{
-		color:$pink;
+		color:$primary;
 	}
 	a:active{
-		color:$grey;
+		color:$secondary;
 	}
 	a:visited{
-		color:$pink;
+		color:$primary;
 	}
 	a:hover{
-		color:$grey;
+		color:$secondary;
 	}
-	height: 100%;
+	// height: 100%;
 }
 
 
@@ -59,7 +59,7 @@ body{
 	height:100%;
 	margin-bottom: -4em;
 	width:75%;
-	background-color: $offWhite;
+	background-color: $tertiary;
 	margin-right: auto;
 	margin-left:auto;
 	padding:.4em;
@@ -69,10 +69,34 @@ body{
 	text-align: center;
 }
 
+.partsOfSpeech{
+	list-style-type:none;
+	display: inline;
+}
+.partsOfSpeechInput{
+	float:right;
+	clear:both;
+}
+
+#libtext{
+	width:50%;
+	height:200px;
+}
+.textForm label{
+	display:block;
+	padding: 1em;
+}
+.completedLib{
+	padding:1em;
+	margin:2em;
+	background-color: $primary;
+	color: $white;
+}
+
 
 //buttons
 button.std, input.std{
-	background-color: $pink;
+	background-color: $secondary;
 	color:$white;
 	padding:.6em;
 	margin-top:.2em;
@@ -95,7 +119,7 @@ button.giant{
 .banner{
 	padding:.6em;
 	color:$white;
-	background-color:$pink;
+	background-color:$primary;
 }
 
 

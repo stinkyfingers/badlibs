@@ -1,16 +1,17 @@
-<h2>
-Badlibs
-</h2>
+
 <div class="ratingSelect">
+	<label>Filter by rating:</label>
 	<select name="rate" ng-model="rating" ng-options="rating.value for rating in allRatings" ng-change="selectbyRating(rating)">
 		<option value="">Show All</option>
 	</select>
 </div>
-<ul>
-	
+
+
+<ul class="partsOfSpeech">
+	<h3>Select a Badlib to play:</h3>
 	<li ng-repeat="lib in libsView">
 		<a href="badlibs/[[lib._id]]">
-			[[lib.title]] - [[lib.rating]]
+			[[lib.title]] <span ng-if="lib.rating">(Rated: [[lib.rating]])</span>
 		</a>
 	</li>
 	

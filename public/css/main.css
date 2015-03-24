@@ -4,12 +4,11 @@ html {
 
 body {
   margin: 0;
-  color: #e4c;
-  height: 100%; }
+  color: #aa5739; }
   body #header {
     margin: 0 0 .1em 0;
     padding: .4em 0 0 0;
-    background-color: #e4c;
+    background-color: #aa5739;
     width: 100%; }
     body #header .mainHeader {
       text-align: center;
@@ -19,13 +18,13 @@ body {
   body a {
     text-decoration: none; }
   body a:link {
-    color: #e4c; }
+    color: #aa5739; }
   body a:active {
-    color: #222; }
+    color: #aa7939; }
   body a:visited {
-    color: #e4c; }
+    color: #aa5739; }
   body a:hover {
-    color: #222; }
+    color: #aa7939; }
 
 .menu {
   text-align: center; }
@@ -38,7 +37,7 @@ body {
   height: 100%;
   margin-bottom: -4em;
   width: 75%;
-  background-color: #eee;
+  background-color: #88ad39;
   margin-right: auto;
   margin-left: auto;
   padding: .4em; }
@@ -46,8 +45,30 @@ body {
 .center {
   text-align: center; }
 
+.partsOfSpeech {
+  list-style-type: none;
+  display: inline; }
+
+.partsOfSpeechInput {
+  float: right;
+  clear: both; }
+
+#libtext {
+  width: 50%;
+  height: 200px; }
+
+.textForm label {
+  display: block;
+  padding: 1em; }
+
+.completedLib {
+  padding: 1em;
+  margin: 2em;
+  background-color: #aa5739;
+  color: #fff; }
+
 button.std, input.std {
-  background-color: #e4c;
+  background-color: #aa7939;
   color: #fff;
   padding: .6em;
   margin-top: .2em;
@@ -68,7 +89,7 @@ button.giant {
 .banner {
   padding: .6em;
   color: #fff;
-  background-color: #e4c; }
+  background-color: #aa5739; }
 
 @media (min-width: 800px) {
   #main {

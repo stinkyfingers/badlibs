@@ -10,6 +10,8 @@ define(["app", "services/badlibs"],function(app){
 		$scope.posArray = [];
 		$scope.pos = {};
 		$scope.objArray = [];
+		// $scope.completedLib = {};
+		var iterator = 0;
 
 
 		params = $route.current.params;
@@ -39,14 +41,28 @@ define(["app", "services/badlibs"],function(app){
 		}
 
 		$scope.submitPos = function(){
-			console.log($scope.lib);
+			//TODO - required
+			// var ok =$error.required;
+			// console.log(ok)
 			var re = /\(\([A-Za-z]*\)\)/gi;
 			var newString = $scope.lib.text.replace(re, replacer);
-//TODO now what?
+			iterator = 0;
+			//check capitalization
+			// newString = newString.replace(/[!\?\.][ ][a-z]/,function(){return arguments[0].toUpperCase();})
+
+			$scope.completedLib = newString;
 		}
 
-		replacer = function($scope.lib.text, ){
+		replacer = function(){
+			var output;
+			angular.forEach($scope.objArray,function(v,k){
+				if (k == iterator){
+					output =  v.userWord;
+				}
+			});
 
+			iterator++;
+			return output;
 		}
 
 		$scope.allLibs = badlibsFactory.find($scope.lib).
@@ -77,9 +93,12 @@ define(["app", "services/badlibs"],function(app){
 
 
 		$scope.createLib = function(lib){
-			//TODO
+			if (lib.rating =="" || typeof(lib.rating) == "undefined"){
+				lib.rating = "R";
+			}
 			badlibsFactory.createLib(lib).then(function(data){
 				$scope.lib = data;
+				alert("Success!");
 			},function(err){
 				$scope.err = err;
 			});
@@ -93,7 +112,7 @@ define(["app", "services/badlibs"],function(app){
 			beginning = textarea.value.substr(0,caret);
 			end = textarea.value.substr(caret, textarea.value.length);
 
-			$scope.lib.text = textarea.value = beginning + (" (("+ partOfSpeech.value+")) ") + end;
+			$scope.lib.text = textarea.value = beginning + ("(("+ partOfSpeech.value+"))") + end;
 
 			textarea.focus();
 		}

@@ -18,12 +18,7 @@ define(['angularAMD', 'angular-route', 'angularCookies'], function (angularAMD) 
 
 		$routeProvider.
 			
-			when("/test",angularAMD.route({
-				templateUrl: '/public/js/templates/test.tmpl',
-				controller: 'testController',
-				controllerUrl: 'controllers/test'
-			})).
-			when("/badlibs/create",angularAMD.route({
+			when("/create",angularAMD.route({
 				templateUrl: '/public/js/templates/createbadlibs.tmpl',
 				controller: 'badlibsController',
 				controllerUrl: 'controllers/badlibs'
@@ -33,7 +28,7 @@ define(['angularAMD', 'angular-route', 'angularCookies'], function (angularAMD) 
 				controller: 'badlibsController',
 				controllerUrl: 'controllers/badlibs'
 			})).
-			when("/badlibs",angularAMD.route({
+			when("/",angularAMD.route({
 				templateUrl: '/public/js/templates/badlibs.tmpl',
 				controller: 'badlibsController',
 				controllerUrl: 'controllers/badlibs'

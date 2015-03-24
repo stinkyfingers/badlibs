@@ -1,0 +1,20 @@
+<h2 class="center">[[lib.title]]</h2>
+<h6 class="center">Rated: [[lib.rating]]</h6>
+
+<form name="playLibForm">
+	<ul class="partsOfSpeech">
+		<h3>Enter the parts of speech below:</h3>
+		<li ng-repeat="pos in posArray track by $index">
+			[[pos]]: 
+			<input type="text" class="partsOfSpeechInput" ng-model="objArray[$index].userWord" required>
+
+		</li>
+	</ul>
+</form>
+
+<button ng-click="submitPos()" class="std">Submit</button>
+
+<div ng-if="completedLib" class="completedLib">
+
+	[[completedLib]]
+</div>
