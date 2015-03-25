@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
+	// "os"
 	"regexp"
 
 	"github.com/stinkyfingers/badlibs/controllers/application"
@@ -14,9 +14,9 @@ import (
 	"github.com/stinkyfingers/badlibs/controllers/ratingscontroller"
 )
 
-var (
-	port = flag.String("port", ":8080", "Port to run on")
-)
+// var (
+// 	port = flag.String("port", ":8080", "Port to run on")
+// )
 
 func main() {
 	flag.Parse()
@@ -39,11 +39,11 @@ func main() {
 	//APP
 	rh.AddRoute(regexp.MustCompile("/.*"), http.HandlerFunc(application.Application))
 
-	p := os.Getenv("PORT")
-	if p == "" {
-		p = "8000"
-	}
-	err := http.ListenAndServe(":"+p, &rh)
+	// p := os.Getenv("PORT")
+	// if p == "" {
+	// 	p = "8080"
+	// }
+	err := http.ListenAndServe(":8080", &rh)
 	if err != nil {
 		log.Print(err)
 	}
