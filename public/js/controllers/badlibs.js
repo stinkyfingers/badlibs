@@ -27,7 +27,7 @@ define(["app", "services/badlibs"],function(app){
 		}
 
 		setup = function(lib){
-			var re = /\(\([A-Za-z]*\)\)/gi;
+			var re = /\(\([A-Za-z \-]*\)\)/gi;
 			$scope.posArray = lib.text.match(re);
 			$scope.objArray = new Array($scope.posArray.length);
 			angular.forEach($scope.posArray,function(v,k){
@@ -44,7 +44,7 @@ define(["app", "services/badlibs"],function(app){
 			//TODO - required
 			// var ok =$error.required;
 			// console.log(ok)
-			var re = /\(\([A-Za-z]*\)\)/gi;
+			var re =  /\(\([A-Za-z \-]*\)\)/gi;
 			var newString = $scope.lib.text.replace(re, replacer);
 			iterator = 0;
 			//check capitalization
@@ -99,6 +99,7 @@ define(["app", "services/badlibs"],function(app){
 			badlibsFactory.createLib(lib).then(function(data){
 				$scope.lib = data;
 				alert("Success!");
+				$scope.lib = {};
 			},function(err){
 				$scope.err = err;
 			});
