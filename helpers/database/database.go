@@ -27,11 +27,11 @@ func ConnectionString() string {
 func MongoConnectionString() *mgo.DialInfo {
 
 	var (
-		MongoDBHosts    = os.Getenv("$OPENSHIFT_MONGODB_DB_HOST")
-		MongoPort       = os.Getenv("$OPENSHIFT_MONGODB_DB_PORT")
-		AuthDatabase    = os.Getenv("MONGO_DB")
-		AuthUserName    = os.Getenv("MONGO_USER")
-		AuthPassword    = os.Getenv("MONGO_PASS")
+		MongoDBHosts = os.Getenv("OPENSHIFT_MONGODB_DB_HOST")
+		MongoPort    = os.Getenv("OPENSHIFT_MONGODB_DB_PORT")
+		// AuthDatabase    = os.Getenv("MONGO_DB")
+		AuthUserName    = os.Getenv("OPENSHIFT_MONGODB_DB_USERNAME")
+		AuthPassword    = os.Getenv("OPENSHIFT_MONGODB_DB_PASSWORD")
 		mongoDBDialInfo mgo.DialInfo
 	)
 
@@ -48,7 +48,7 @@ func MongoConnectionString() *mgo.DialInfo {
 		mongoDBDialInfo = mgo.DialInfo{
 			Addrs:    []string{addr},
 			Timeout:  60 * time.Second,
-			Database: AuthDatabase,
+			Database: "badlibs",
 			Username: AuthUserName,
 			Password: AuthPassword,
 		}
