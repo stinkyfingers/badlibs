@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	// "os"
+	"os"
 	"regexp"
 
 	"github.com/stinkyfingers/badlibs/controllers/application"
@@ -43,7 +43,13 @@ func main() {
 	// if p == "" {
 	// 	p = "8080"
 	// }
-	err := http.ListenAndServe(":8080", &rh)
+
+	//openshift env var
+	bind := fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
+	if bind == ":" {
+		bind = ":8080"
+	}
+	err := http.ListenAndServe(bind, &rh)
 	if err != nil {
 		log.Print(err)
 	}
