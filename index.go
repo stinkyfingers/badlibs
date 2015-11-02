@@ -8,7 +8,6 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/stinkyfingers/badlibs/controllers/application"
 	"github.com/stinkyfingers/badlibs/controllers/libscontroller"
 	"github.com/stinkyfingers/badlibs/controllers/partsofspeechcontroller"
 	"github.com/stinkyfingers/badlibs/controllers/ratingscontroller"
@@ -35,7 +34,7 @@ func main() {
 	//openshift env var
 	bind := fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
 	if bind == ":" {
-		bind = ":8080"
+		bind = ":8081"
 	}
 	err := http.ListenAndServe(bind, &rh)
 	if err != nil {
