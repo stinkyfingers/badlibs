@@ -32,12 +32,13 @@ func main() {
 	rh.AddRoute(regexp.MustCompile("/partsofspeech/create"), middleware(http.HandlerFunc(partsofspeechcontroller.CreatePartOfSpeech)))
 
 	//openshift env var
-	bind := fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
+	bind := fmt.Sprintf("%s:%s", os.Getenv("OPENSHIFT_GO_IP"), os.Getenv("OPENSHIFT_GO_PORT"))
 	if bind == ":" {
 		bind = ":8081"
 	}
 	err := http.ListenAndServe(bind, &rh)
 	if err != nil {
+		log.Print("BIND ", bind)
 		log.Print(err)
 	}
 }
