@@ -2,8 +2,12 @@ package libs
 
 import (
 	"github.com/stinkyfingers/badlibs/helpers/database"
+	// "github.com/stinkyfingers/badlibs/models/partsofspeech"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	// "regexp"
+	// "strings"
 	"time"
 )
 
@@ -23,6 +27,7 @@ func (l *Lib) Create() error {
 	}
 	defer session.Close()
 	l.ID = bson.NewObjectId()
+
 	c := session.DB(database.MongoDatabase()).C("libs")
 	return c.Insert(l)
 }
@@ -86,9 +91,6 @@ func (l *Lib) Find() ([]Lib, error) {
 	if l.Rating != "" {
 		querymap["rating"] = l.Rating
 	}
-	// if !l.Created.IsZero() {
-	// 	querymap["created"] = l.Created
-	// }
 	err = c.Find(querymap).All(&ls)
 	if err != nil {
 		return ls, err

@@ -35,3 +35,13 @@ func (p *PartOfSpeech) FindMatch() ([]PartOfSpeech, error) {
 	err = c.Find(querymap).All(&ps)
 	return ps, err
 }
+
+func (p *PartOfSpeech) Create() error {
+	session, err := mgo.DialWithInfo(database.MongoConnectionString())
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+	p.ID = bson.NewObjectId()
+	return session.DB(database.MongoDatabase()).C("partsofspeech").Insert(p)
+}

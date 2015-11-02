@@ -9,6 +9,7 @@ import (
 type Rating struct {
 	ID    bson.ObjectId `bson:"_id" json:"id"`
 	Value string        `bson:"value" json:"value"`
+	Sort  int           `bson:"sort" json:"sort"`
 }
 
 func (r *Rating) FindMatch() ([]Rating, error) {

@@ -22,27 +22,15 @@ func main() {
 	flag.Parse()
 	fmt.Print("Running. \n")
 
-	//FILES
-	rh.AddRoute(regexp.MustCompile("/public/js/"), http.StripPrefix("/public/js/", http.FileServer(http.Dir("public/js"))))
-	rh.AddRoute(regexp.MustCompile("/public/templates/"), http.StripPrefix("/public/templates/", http.FileServer(http.Dir("public/templates"))))
-	rh.AddRoute(regexp.MustCompile("/public/css/"), http.StripPrefix("/public/css/", http.FileServer(http.Dir("public/css"))))
-
 	//API
-	rh.AddRoute(regexp.MustCompile("/lib/create"), http.HandlerFunc(libscontroller.CreateLib))
-	rh.AddRoute(regexp.MustCompile("/lib/update"), http.HandlerFunc(libscontroller.UpdateLib))
-	rh.AddRoute(regexp.MustCompile("/lib/delete"), http.HandlerFunc(libscontroller.DeleteLib))
-	rh.AddRoute(regexp.MustCompile("/lib/get"), http.HandlerFunc(libscontroller.GetLib))
-	rh.AddRoute(regexp.MustCompile("/lib/find"), http.HandlerFunc(libscontroller.FindLib))
-	rh.AddRoute(regexp.MustCompile("/ratings/find"), http.HandlerFunc(ratingscontroller.FindRatings))
-	rh.AddRoute(regexp.MustCompile("/partsofspeech/find"), http.HandlerFunc(partsofspeechcontroller.FindPartsOfSpeech))
-
-	//APP
-	rh.AddRoute(regexp.MustCompile("/.*"), http.HandlerFunc(application.Application))
-
-	// p := os.Getenv("PORT")
-	// if p == "" {
-	// 	p = "8080"
-	// }
+	rh.AddRoute(regexp.MustCompile("/lib/create"), middleware(http.HandlerFunc(libscontroller.CreateLib)))
+	rh.AddRoute(regexp.MustCompile("/lib/update"), middleware(http.HandlerFunc(libscontroller.UpdateLib)))
+	rh.AddRoute(regexp.MustCompile("/lib/delete"), middleware(http.HandlerFunc(libscontroller.DeleteLib)))
+	rh.AddRoute(regexp.MustCompile("/lib/get"), middleware(http.HandlerFunc(libscontroller.GetLib)))
+	rh.AddRoute(regexp.MustCompile("/lib/find"), middleware(http.HandlerFunc(libscontroller.FindLib)))
+	rh.AddRoute(regexp.MustCompile("/ratings/find"), middleware(http.HandlerFunc(ratingscontroller.FindRatings)))
+	rh.AddRoute(regexp.MustCompile("/partsofspeech/find"), middleware(http.HandlerFunc(partsofspeechcontroller.FindPartsOfSpeech)))
+	rh.AddRoute(regexp.MustCompile("/partsofspeech/create"), middleware(http.HandlerFunc(partsofspeechcontroller.CreatePartOfSpeech)))
 
 	//openshift env var
 	bind := fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
@@ -85,4 +73,16 @@ func (rh *RegexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	// no pattern matched; send 404 response
 	http.NotFound(w, r)
+}
+
+func middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		if r.Method == "OPTIONS" {
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
