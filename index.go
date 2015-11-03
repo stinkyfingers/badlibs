@@ -30,6 +30,7 @@ func main() {
 	rh.AddRoute(regexp.MustCompile("/ratings/find"), middleware(http.HandlerFunc(ratingscontroller.FindRatings)))
 	rh.AddRoute(regexp.MustCompile("/partsofspeech/find"), middleware(http.HandlerFunc(partsofspeechcontroller.FindPartsOfSpeech)))
 	rh.AddRoute(regexp.MustCompile("/partsofspeech/create"), middleware(http.HandlerFunc(partsofspeechcontroller.CreatePartOfSpeech)))
+	rh.AddRoute(regexp.MustCompile("/"), http.HandlerFunc(status))
 
 	//openshift env var
 	bind := fmt.Sprintf("%s:%s", os.Getenv("OPENSHIFT_GO_IP"), os.Getenv("OPENSHIFT_GO_PORT"))
@@ -85,4 +86,9 @@ func middleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func status(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Running"))
+	return
 }
