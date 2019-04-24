@@ -1,9 +1,0 @@
-#wercker yaml file
-#box: wercker/default
-box: wercker-labs/docker
-build:
-  steps:
-    - script:
-        name: Build the application
-        code: |
-          docker -v

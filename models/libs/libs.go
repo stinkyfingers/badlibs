@@ -70,7 +70,7 @@ func (l *Lib) Get() error {
 
 func (l *Lib) Find() ([]Lib, error) {
 	var err error
-	var ls []Lib
+	ls := make([]Lib, 0)
 	session, err := mgo.DialWithInfo(database.MongoConnectionString())
 	if err != nil {
 		return ls, err

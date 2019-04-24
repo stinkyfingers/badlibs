@@ -1,28 +1,27 @@
 package database
 
 import (
-	"flag"
-	"fmt"
-	"gopkg.in/mgo.v2"
 	"os"
 	"time"
+
+	"gopkg.in/mgo.v2"
 )
 
-var (
-	EmptyDb = flag.String("clean", "", "bind empty database with structure defined")
-)
-
-func ConnectionString() string {
-
-	if addr := os.Getenv("CLEARDB_DATABASE_URL"); addr != "" {
-		return fmt.Sprint(addr)
-	}
-
-	if EmptyDb != nil && *EmptyDb != "" {
-		return "root:@tcp(127.0.0.1:3306)/Kindling_Empty?parseTime=true&loc=America%2FChicago"
-	}
-	return "root:@tcp(127.0.0.1:3306)/Kindling?parseTime=true&loc=America%2FChicago"
-}
+// var (
+// 	EmptyDb = flag.String("clean", "", "bind empty database with structure defined")
+// )
+//
+// func ConnectionString() string {
+//
+// 	if addr := os.Getenv("CLEARDB_DATABASE_URL"); addr != "" {
+// 		return fmt.Sprint(addr)
+// 	}
+//
+// 	if EmptyDb != nil && *EmptyDb != "" {
+// 		return "root:@tcp(127.0.0.1:3306)/Kindling_Empty?parseTime=true&loc=America%2FChicago"
+// 	}
+// 	return "root:@tcp(127.0.0.1:3306)/Kindling?parseTime=true&loc=America%2FChicago"
+// }
 
 func MongoConnectionString() *mgo.DialInfo {
 
