@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,7 +12,6 @@ import (
 )
 
 func lambdaFunction(ev events.ALBTargetGroupRequest) (events.ALBTargetGroupResponse, error) {
-	log.Print("path", ev.Path)
 	var queries string
 	for k, v := range ev.QueryStringParameters {
 		queries += fmt.Sprintf("&%s=%s", k, v)
@@ -31,7 +29,6 @@ func lambdaFunction(ev events.ALBTargetGroupRequest) (events.ALBTargetGroupRespo
 			IsBase64Encoded:   false,
 		}, nil
 	}
-	log.Print("REQ", req)
 
 	rr := httptest.NewRecorder()
 	server.NewMux().ServeHTTP(rr, req)
@@ -44,7 +41,6 @@ func lambdaFunction(ev events.ALBTargetGroupRequest) (events.ALBTargetGroupRespo
 			headers[k] = v[0]
 		}
 	}
-	log.Print(rr.Body.String(), rr)
 	return events.ALBTargetGroupResponse{
 		Body:              rr.Body.String(),
 		IsBase64Encoded:   false,
