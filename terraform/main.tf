@@ -42,44 +42,44 @@ resource "aws_lambda_alias" "badlibs_server_live" {
 resource "aws_lambda_function" "badlibs_server" {
   filename         = "../lambda.zip"
   function_name    = "badlibs_server"
-  role             = "${module.stinkyfingers.lambda_role}"
+  role             = "${aws_iam_role.lambda_role.arn}"
   handler          = "lambda-lambda"
   runtime          = "go1.x"
   source_code_hash = "${filebase64sha256("../lambda.zip")}"
   environment {
     variables = {
-      OPENSHIFT_MONGODB_DB_HOST = "ds155862.mlab.com"
-      OPENSHIFT_MONGODB_DB_PASSWORD = "Ch1ck3nbutt"
-      OPENSHIFT_MONGODB_DB_PORT = "55862"
-      OPENSHIFT_MONGODB_DB_USERNAME = "badlibs"
+      OPENSHIFT_MONGODB_DB_HOST     =  "${data.aws_ssm_parameter.db_host.value}"
+      OPENSHIFT_MONGODB_DB_PASSWORD =  "${data.aws_ssm_parameter.db_password.value}"
+      OPENSHIFT_MONGODB_DB_PORT     =  "${data.aws_ssm_parameter.db_port.value}"
+      OPENSHIFT_MONGODB_DB_USERNAME =  "${data.aws_ssm_parameter.db_username.value}"
     }
   }
+}
+
+# IAM
+resource "aws_iam_role" "lambda_role" {
+  name = "badlibs-lambda-role"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
 }
 
 # ALB
 resource "aws_lb_target_group" "badlibs" {
   name        = "badlibs"
   target_type = "lambda"
-
-  # health_check {
-  #    healthy_threshold   = "3"
-  #    unhealthy_threshold = "3"
-  #    timeout             = "5"
-  #    path                = "/"
-  #    interval            = "10"
-  #    matcher             = "200"
-  # }
-}
-
-resource "aws_lb_listener" "badlibs_server" {
-  # load_balancer_arn = "${aws_lb.stinkyfingers_load_balancer.arn}"
-  load_balancer_arn = "${module.stinkyfingers.stinkyfingers_load_balancer}"
-  port              = "80"
-  protocol          = "HTTP"
-  default_action {
-    type             = "forward"
-    target_group_arn = "${aws_lb_target_group.badlibs.arn}"
-  }
 }
 
 resource "aws_lb_target_group_attachment" "badlibs_server" {
@@ -89,7 +89,7 @@ resource "aws_lb_target_group_attachment" "badlibs_server" {
 }
 
 resource "aws_lb_listener_rule" "badlibs_server" {
-listener_arn = "${aws_lb_listener.badlibs_server.arn}"
+listener_arn = "${module.stinkyfingers.stinkyfingers_http_listener}"
 priority = 2
   action {
     type             = "forward"
@@ -100,4 +100,37 @@ priority = 2
     values = ["/badlibs/*"]
   }
   depends_on = ["aws_lb_target_group.badlibs"]
+}
+
+# backend
+terraform {
+  backend "s3" {
+    bucket = "remotebackend"
+    key    = "badlibs/terraform.tfstate"
+    region = "us-west-1"
+    profile = "jds"
+  }
+}
+
+data "terraform_remote_state" "badlibs" {
+  backend = "s3"
+  config = {
+    bucket  = "remotebackend"
+    key     = "badlibs/terraform.tfstate"
+    region  = "us-west-1"
+    profile = "jds"
+  }
+}
+
+data "aws_ssm_parameter" "db_host" {
+  name = "/badlibs/OPENSHIFT_MONGODB_DB_HOST"
+}
+data "aws_ssm_parameter" "db_password" {
+  name = "/badlibs/OPENSHIFT_MONGODB_DB_PASSWORD"
+}
+data "aws_ssm_parameter" "db_port" {
+  name = "/badlibs/OPENSHIFT_MONGODB_DB_PORT"
+}
+data "aws_ssm_parameter" "db_username" {
+  name = "/badlibs/OPENSHIFT_MONGODB_DB_USERNAME"
 }
