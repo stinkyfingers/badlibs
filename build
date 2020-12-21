@@ -4,7 +4,7 @@
 new=$1
 dir=$(echo $path | cut -d'/' -f1);
 suffix='lambda'
-prefix='movietitle'
+prefix='badlibs'
 
 declare -a lambdas
 lambdas=(

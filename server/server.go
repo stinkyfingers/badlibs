@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/stinkyfingers/badlibs/controllers/libscontroller"
-	"github.com/stinkyfingers/badlibs/controllers/ratingscontroller"
 )
 
 // NewMux returns the router
@@ -16,7 +15,7 @@ func NewMux() http.Handler {
 	mux.Handle("/lib/delete", middleware(libscontroller.DeleteLib))
 	mux.Handle("/lib/get", middleware(libscontroller.GetLib))
 	mux.Handle("/lib/find", middleware(libscontroller.FindLib))
-	mux.Handle("/ratings/find", middleware(ratingscontroller.FindRatings))
+	// mux.Handle("/ratings/find", middleware(ratingscontroller.FindRatings))
 	mux.Handle("/health", middleware(status))
 	return mux
 }

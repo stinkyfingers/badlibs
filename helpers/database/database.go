@@ -31,7 +31,7 @@ func MongoConnectionString() *mgo.DialInfo {
 		mongoDBDialInfo = mgo.DialInfo{
 			Addrs:    []string{addr},
 			Timeout:  60 * time.Second,
-			Database: "badlibs",
+			Database: "admin",
 			Username: AuthUserName,
 			Password: AuthPassword,
 		}

@@ -2,22 +2,18 @@ package libscontroller
 
 import (
 	"encoding/json"
-	"github.com/stinkyfingers/badlibs/models/libs"
-	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/stinkyfingers/badlibs/models/libs"
 )
 
 func GetLib(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
 	var l libs.Lib
-	if ok := bson.IsObjectIdHex(id); !ok {
-		http.Error(w, "Not valid ID.", 400)
-		return
-	}
-	l.ID = bson.ObjectIdHex(id)
+	l.ID = r.URL.Query().Get("id")
+
 	err := l.Get()
 	if err != nil {
 		http.Error(w, err.Error(), 400)
@@ -80,7 +76,6 @@ func DeleteLib(w http.ResponseWriter, r *http.Request) {
 	err = l.Delete()
 	if err != nil {
 		http.Error(w, err.Error(), 400)
-		return
 		return
 	}
 	j, err := json.Marshal(l)
