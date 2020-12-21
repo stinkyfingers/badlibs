@@ -123,14 +123,14 @@ data "terraform_remote_state" "badlibs" {
 }
 
 data "aws_ssm_parameter" "db_host" {
-  name = "/badlibs/OPENSHIFT_MONGODB_DB_HOST"
+  name = "/badlibs/MONGODB_DB_HOST"
 }
 data "aws_ssm_parameter" "db_password" {
-  name = "/badlibs/OPENSHIFT_MONGODB_DB_PASSWORD"
+  name = "/badlibs/MONGODB_DB_PASSWORD"
 }
 data "aws_ssm_parameter" "db_port" {
-  name = "/badlibs/OPENSHIFT_MONGODB_DB_PORT"
+  name = "/badlibs/MONGODB_DB_PORT"
 }
 data "aws_ssm_parameter" "db_username" {
-  name = "/badlibs/OPENSHIFT_MONGODB_DB_USERNAME"
+  name = "/badlibs/MONGODB_DB_USERNAME"
 }

@@ -2,3 +2,4 @@ terraform/.terraform*
 terraform/terraform.tfstate.backup
 lambda-lambda
 lambda.zip
+.env

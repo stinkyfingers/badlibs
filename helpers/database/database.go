@@ -10,11 +10,11 @@ import (
 func MongoConnectionString() *mgo.DialInfo {
 
 	var (
-		MongoDBHosts = os.Getenv("OPENSHIFT_MONGODB_DB_HOST")
-		MongoPort    = os.Getenv("OPENSHIFT_MONGODB_DB_PORT")
+		MongoDBHosts = os.Getenv("MONGODB_DB_HOST")
+		MongoPort    = os.Getenv("MONGODB_DB_PORT")
 		// AuthDatabase    = os.Getenv("MONGO_DB")
-		AuthUserName    = os.Getenv("OPENSHIFT_MONGODB_DB_USERNAME")
-		AuthPassword    = os.Getenv("OPENSHIFT_MONGODB_DB_PASSWORD")
+		AuthUserName    = os.Getenv("MONGODB_DB_USERNAME")
+		AuthPassword    = os.Getenv("MONGODB_DB_PASSWORD")
 		mongoDBDialInfo mgo.DialInfo
 	)
 
