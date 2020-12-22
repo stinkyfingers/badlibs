@@ -5,17 +5,22 @@ import (
 	"net/http"
 
 	"github.com/stinkyfingers/badlibs/controllers/libscontroller"
+	"github.com/stinkyfingers/badlibs/models/libs"
 )
 
 // NewMux returns the router
 func NewMux() http.Handler {
+	err := libs.AssureDBBucket()
+	if err != nil {
+		panic(err)
+	}
+
 	mux := http.NewServeMux()
 	mux.Handle("/lib/create", middleware(libscontroller.CreateLib))
 	mux.Handle("/lib/update", middleware(libscontroller.UpdateLib))
 	mux.Handle("/lib/delete", middleware(libscontroller.DeleteLib))
 	mux.Handle("/lib/get", middleware(libscontroller.GetLib))
-	mux.Handle("/lib/find", middleware(libscontroller.FindLib))
-	// mux.Handle("/ratings/find", middleware(ratingscontroller.FindRatings))
+	mux.Handle("/lib/all", middleware(libscontroller.AllLibs))
 	mux.Handle("/health", middleware(status))
 	return mux
 }

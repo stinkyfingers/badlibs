@@ -52,14 +52,6 @@ resource "aws_lambda_function" "badlibs_server" {
   handler          = "lambda-lambda"
   runtime          = "go1.x"
   source_code_hash = filebase64sha256("../lambda.zip")
-  environment {
-    variables = {
-      OPENSHIFT_MONGODB_DB_HOST     =  data.aws_ssm_parameter.db_host.value
-      OPENSHIFT_MONGODB_DB_PASSWORD =  data.aws_ssm_parameter.db_password.value
-      OPENSHIFT_MONGODB_DB_PORT     =  data.aws_ssm_parameter.db_port.value
-      OPENSHIFT_MONGODB_DB_USERNAME =  data.aws_ssm_parameter.db_username.value
-    }
-  }
 }
 
 # IAM
@@ -129,11 +121,12 @@ resource "aws_s3_bucket" "badlibs" {
               "AWS": "${aws_iam_role.lambda_role.arn}"
           },
           "Action": [
-            "s3:GetObject",
-            "s3:PutObject",
-            "s3:DeleteObject"
+            "s3:*"
           ],
-          "Resource": "arn:aws:s3:::badlibs/*"
+          "Resource": [
+            "arn:aws:s3:::badlibs",
+            "arn:aws:s3:::badlibs/*"
+          ]
       }
   ]
 }
@@ -158,17 +151,4 @@ data "terraform_remote_state" "badlibs" {
     region  = "us-west-1"
     profile = "jds"
   }
-}
-
-data "aws_ssm_parameter" "db_host" {
-  name = "/badlibs/MONGODB_DB_HOST"
-}
-data "aws_ssm_parameter" "db_password" {
-  name = "/badlibs/MONGODB_DB_PASSWORD"
-}
-data "aws_ssm_parameter" "db_port" {
-  name = "/badlibs/MONGODB_DB_PORT"
-}
-data "aws_ssm_parameter" "db_username" {
-  name = "/badlibs/MONGODB_DB_USERNAME"
 }

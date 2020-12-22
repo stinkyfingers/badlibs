@@ -21,7 +21,10 @@ type Lib struct {
 	Created *time.Time `json:"created" bson:"created"`
 }
 
+type DBMap map[string]Lib
+
 const bucket = "badlibs"
+const key = "db.json"
 const region = "us-west-1"
 
 var (
@@ -38,13 +41,29 @@ func (l *Lib) Update() error {
 	if err != nil {
 		return err
 	}
-	j, err := json.Marshal(l)
+
+	resp, err := s3.New(sess).GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return err
+	}
+
+	var libs DBMap
+	err = json.NewDecoder(resp.Body).Decode(&libs)
+	if err != nil {
+		return err
+	}
+	libs[l.ID] = *l
+
+	j, err := json.Marshal(libs)
 	if err != nil {
 		return err
 	}
 	_, err = s3.New(sess).PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(bucket),
-		Key:    aws.String(l.ID),
+		Key:    aws.String(key),
 		Body:   bytes.NewReader(j),
 	})
 	return err
@@ -55,9 +74,30 @@ func (l *Lib) Delete() error {
 	if err != nil {
 		return err
 	}
-	_, err = s3.New(sess).DeleteObject(&s3.DeleteObjectInput{
+	resp, err := s3.New(sess).GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(bucket),
-		Key:    aws.String(l.ID),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return err
+	}
+	if resp == nil {
+		return ErrNilObject
+	}
+	var libs DBMap
+	err = json.NewDecoder(resp.Body).Decode(&libs)
+	if err != nil {
+		return err
+	}
+	delete(libs, l.ID)
+	j, err := json.Marshal(libs)
+	if err != nil {
+		return err
+	}
+	_, err = s3.New(sess).PutObject(&s3.PutObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+		Body:   bytes.NewReader(j),
 	})
 	return err
 }
@@ -69,7 +109,7 @@ func (l *Lib) Get() error {
 	}
 	resp, err := s3.New(sess).GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(bucket),
-		Key:    aws.String(l.ID),
+		Key:    aws.String(key),
 	})
 	if err != nil {
 		return err
@@ -77,17 +117,24 @@ func (l *Lib) Get() error {
 	if resp == nil {
 		return ErrNilObject
 	}
-	err = json.NewDecoder(resp.Body).Decode(l)
-	return err
+	var libs DBMap
+	err = json.NewDecoder(resp.Body).Decode(&libs)
+	if err != nil {
+		return err
+	}
+	lib := libs[l.ID]
+	l = &lib
+	return nil
 }
 
-func (l *Lib) Find() ([]Lib, error) {
+func (l *Lib) All() ([]Lib, error) {
 	sess, err := Session(region)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := s3.New(sess).ListObjects(&s3.ListObjectsInput{
+	resp, err := s3.New(sess).GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
 	})
 	if err != nil {
 		return nil, err
@@ -95,25 +142,16 @@ func (l *Lib) Find() ([]Lib, error) {
 	if resp == nil {
 		return nil, ErrNilObject
 	}
-	// TODO pagination
-
-	var libs []Lib
-	for _, obj := range resp.Contents {
-		resp, err := s3.New(sess).GetObject(&s3.GetObjectInput{
-			Bucket: aws.String(bucket),
-			Key:    aws.String(*obj.Key),
-		})
-		if err != nil {
-			return nil, err
-		}
-		var l Lib
-		err = json.NewDecoder(resp.Body).Decode(&l)
-		if err != nil {
-			return nil, err
-		}
-		libs = append(libs, l)
+	var libs DBMap
+	err = json.NewDecoder(resp.Body).Decode(&libs)
+	if err != nil {
+		return nil, err
 	}
-	return libs, err
+	var output []Lib
+	for _, lib := range libs {
+		output = append(output, lib)
+	}
+	return output, err
 }
 
 func Session(region string) (*session.Session, error) {
@@ -130,4 +168,24 @@ func Session(region string) (*session.Session, error) {
 	sess.Config.WithRegion(region)
 
 	return sess, nil
+}
+
+func AssureDBBucket() error {
+	sess, err := Session(region)
+	if err != nil {
+		return err
+	}
+	_, err = s3.New(sess).GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+
+	if err != nil {
+		_, err = s3.New(sess).PutObject(&s3.PutObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(key),
+			Body:   bytes.NewReader([]byte("{}")),
+		})
+	}
+	return err
 }

@@ -116,7 +116,7 @@ func UpdateLib(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func FindLib(w http.ResponseWriter, r *http.Request) {
+func AllLibs(w http.ResponseWriter, r *http.Request) {
 	var l libs.Lib
 	requestBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -129,7 +129,7 @@ func FindLib(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ls, err := l.Find()
+	ls, err := l.All()
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return

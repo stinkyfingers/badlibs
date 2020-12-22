@@ -13,7 +13,6 @@ import (
 func main() {
 	flag.Parse()
 	fmt.Print("Running. \n")
-
 	rh := server.NewMux()
 
 	//openshift env var
