@@ -4,24 +4,22 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"os"
 	"time"
 
+	libs "github.com/stinkyfingers/badlibs/models"
+
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/google/uuid"
 )
 
-type Lib struct {
-	ID      string     `json:"_id" bson:"_id"`
-	Text    string     `json:"text" bson:"text"`
-	Title   string     `json:"title" bson:"title"`
-	Rating  string     `json:"rating" bson:"rating"`
-	Created *time.Time `json:"created" bson:"created"`
+type S3Storage struct {
+	client s3iface.S3API
 }
 
-type DBMap map[string]Lib
+type DBMap map[string]libs.Lib
 
 const bucket = "badlibs"
 const key = "db.json"
@@ -31,50 +29,58 @@ var (
 	ErrNilObject = errors.New("nil object")
 )
 
-func (l *Lib) Create() error {
-	l.ID = uuid.New().String()
-	return l.Update()
+func NewS3Storage(profile string) (*S3Storage, error) {
+	sess, err := Session(profile, region)
+	if err != nil {
+	    return nil, err
+	}
+	client := s3.New(sess)
+	err = AssureDBBucket(client)
+	if err != nil {
+		return nil, err
+	}
+	return &S3Storage{
+		client: client,
+	}, nil
 }
 
-func (l *Lib) Update() error {
-	sess, err := Session(region)
-	if err != nil {
-		return err
-	}
+func (s *S3Storage) Create(l *libs.Lib) (*libs.Lib, error) {
+	ti := time.Now()
+	l.Created = &ti
+	l.ID = uuid.New().String()
+	return s.Update(l)
+}
 
-	resp, err := s3.New(sess).GetObject(&s3.GetObjectInput{
+func (s *S3Storage) Update(l *libs.Lib) (*libs.Lib, error) {
+	resp, err := s.client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var libs DBMap
 	err = json.NewDecoder(resp.Body).Decode(&libs)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	libs[l.ID] = *l
 
 	j, err := json.Marshal(libs)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, err = s3.New(sess).PutObject(&s3.PutObjectInput{
+	_, err = s.client.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 		Body:   bytes.NewReader(j),
 	})
-	return err
+	return l, err
 }
 
-func (l *Lib) Delete() error {
-	sess, err := Session(region)
-	if err != nil {
-		return err
-	}
-	resp, err := s3.New(sess).GetObject(&s3.GetObjectInput{
+func (s *S3Storage) Delete(id string) error {
+	resp, err := s.client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -89,12 +95,12 @@ func (l *Lib) Delete() error {
 	if err != nil {
 		return err
 	}
-	delete(libs, l.ID)
+	delete(libs, id)
 	j, err := json.Marshal(libs)
 	if err != nil {
 		return err
 	}
-	_, err = s3.New(sess).PutObject(&s3.PutObjectInput{
+	_, err = s.client.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 		Body:   bytes.NewReader(j),
@@ -102,37 +108,8 @@ func (l *Lib) Delete() error {
 	return err
 }
 
-func (l *Lib) Get() error {
-	sess, err := Session(region)
-	if err != nil {
-		return err
-	}
-	resp, err := s3.New(sess).GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(key),
-	})
-	if err != nil {
-		return err
-	}
-	if resp == nil {
-		return ErrNilObject
-	}
-	var libs DBMap
-	err = json.NewDecoder(resp.Body).Decode(&libs)
-	if err != nil {
-		return err
-	}
-	lib := libs[l.ID]
-	l = &lib
-	return nil
-}
-
-func (l *Lib) All() ([]Lib, error) {
-	sess, err := Session(region)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := s3.New(sess).GetObject(&s3.GetObjectInput{
+func (s *S3Storage) Get(id string) (*libs.Lib, error) {
+	resp, err := s.client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -147,41 +124,52 @@ func (l *Lib) All() ([]Lib, error) {
 	if err != nil {
 		return nil, err
 	}
-	var output []Lib
-	for _, lib := range libs {
+	lib := libs[id]
+	return &lib, nil
+}
+
+func (s *S3Storage) All() ([]libs.Lib, error) {
+	resp, err := s.client.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if resp == nil {
+		return nil, ErrNilObject
+	}
+	var dbMap DBMap
+	err = json.NewDecoder(resp.Body).Decode(&dbMap)
+	if err != nil {
+		return nil, err
+	}
+	var output []libs.Lib
+	for _, lib := range dbMap {
 		output = append(output, lib)
 	}
 	return output, err
 }
 
-func Session(region string) (*session.Session, error) {
-	options := session.Options{}
-	if os.Getenv("PROFILE") != "" {
-		options.Profile = os.Getenv("PROFILE")
-	}
-
+func Session(profile, region string) (*session.Session, error) {
+	options := session.Options{Profile: profile}
 	sess, err := session.NewSessionWithOptions(options)
 	if err != nil {
 		return nil, err
 	}
 
 	sess.Config.WithRegion(region)
-
 	return sess, nil
 }
 
-func AssureDBBucket() error {
-	sess, err := Session(region)
-	if err != nil {
-		return err
-	}
-	_, err = s3.New(sess).GetObject(&s3.GetObjectInput{
+func AssureDBBucket(client *s3.S3) error {
+	_, err := client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
 
 	if err != nil {
-		_, err = s3.New(sess).PutObject(&s3.PutObjectInput{
+		_, err = client.PutObject(&s3.PutObjectInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key),
 			Body:   bytes.NewReader([]byte("{}")),

@@ -3,26 +3,28 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 
 	"github.com/stinkyfingers/badlibs/controllers/libscontroller"
-	"github.com/stinkyfingers/badlibs/models/libs"
+	s3libs "github.com/stinkyfingers/badlibs/models/s3"
 )
 
 // NewMux returns the router
-func NewMux() http.Handler {
-	err := libs.AssureDBBucket()
+func NewMux() (http.Handler, error) {
+	s3Storage, err := s3libs.NewS3Storage(os.Getenv("PROFILE"))
 	if err != nil {
-		panic(err)
+	    return nil, err
 	}
+	s := libscontroller.NewServer(s3Storage)
 
 	mux := http.NewServeMux()
-	mux.Handle("/lib/create", middleware(libscontroller.CreateLib))
-	mux.Handle("/lib/update", middleware(libscontroller.UpdateLib))
-	mux.Handle("/lib/delete", middleware(libscontroller.DeleteLib))
-	mux.Handle("/lib/get", middleware(libscontroller.GetLib))
-	mux.Handle("/lib/all", middleware(libscontroller.AllLibs))
+	mux.Handle("/lib/create", middleware(s.CreateLib))
+	mux.Handle("/lib/update", middleware(s.UpdateLib))
+	mux.Handle("/lib/delete", middleware(s.DeleteLib))
+	mux.Handle("/lib/get", middleware(s.GetLib))
+	mux.Handle("/lib/all", middleware(s.AllLibs))
 	mux.Handle("/health", middleware(status))
-	return mux
+	return mux, nil
 }
 
 func middleware(handler func(w http.ResponseWriter, r *http.Request)) http.Handler {

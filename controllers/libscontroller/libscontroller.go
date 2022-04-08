@@ -5,16 +5,24 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
 
-	"github.com/stinkyfingers/badlibs/models/libs"
+	libs "github.com/stinkyfingers/badlibs/models"
+
 )
 
-func GetLib(w http.ResponseWriter, r *http.Request) {
-	var l libs.Lib
-	l.ID = r.URL.Query().Get("id")
+type Server struct {
+	Storage libs.LibStorer
+}
 
-	err := l.Get()
+func NewServer(storage libs.LibStorer) *Server{
+	return &Server{
+		Storage: storage,
+	}
+}
+
+func (s *Server) GetLib(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	l, err := s.Storage.Get(id)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
@@ -29,23 +37,21 @@ func GetLib(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func CreateLib(w http.ResponseWriter, r *http.Request) {
-	var l libs.Lib
+func (s *Server) CreateLib(w http.ResponseWriter, r *http.Request) {
+	var l *libs.Lib
 	requestBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	err = json.Unmarshal(requestBody, &l)
+	err = json.Unmarshal(requestBody, l)
 	if err != nil {
 		log.Print(err)
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	ti := time.Now()
-	l.Created = &ti
 
-	err = l.Create()
+	l, err = s.Storage.Create(l)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
@@ -60,20 +66,31 @@ func CreateLib(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func DeleteLib(w http.ResponseWriter, r *http.Request) {
-	var l libs.Lib
+func (s *Server) DeleteLib(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	err := s.Storage.Delete(id)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	return
+}
+
+func (s *Server) UpdateLib(w http.ResponseWriter, r *http.Request) {
+	var l *libs.Lib
 	requestBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	err = json.Unmarshal(requestBody, &l)
+	err = json.Unmarshal(requestBody, l)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}
 
-	err = l.Delete()
+	l, err = s.Storage.Update(l)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
@@ -88,55 +105,15 @@ func DeleteLib(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func UpdateLib(w http.ResponseWriter, r *http.Request) {
-	var l libs.Lib
-	requestBody, err := ioutil.ReadAll(r.Body)
+func (s *Server) AllLibs(w http.ResponseWriter, r *http.Request) {
+	ls, err := s.Storage.All()
 	if err != nil {
-		http.Error(w, err.Error(), 400)
-		return
-	}
-	err = json.Unmarshal(requestBody, &l)
-	if err != nil {
-		http.Error(w, err.Error(), 400)
-		return
-	}
-
-	err = l.Update()
-	if err != nil {
-		http.Error(w, err.Error(), 400)
-		return
-	}
-	j, err := json.Marshal(l)
-	if err != nil {
-		http.Error(w, err.Error(), 400)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(j)
-	return
-}
-
-func AllLibs(w http.ResponseWriter, r *http.Request) {
-	var l libs.Lib
-	requestBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), 400)
-		return
-	}
-	err = json.Unmarshal(requestBody, &l)
-	if err != nil {
-		http.Error(w, err.Error(), 400)
-		return
-	}
-
-	ls, err := l.All()
-	if err != nil {
-		http.Error(w, err.Error(), 400)
+		http.Error(w, err.Error(), 500)
 		return
 	}
 	j, err := json.Marshal(ls)
 	if err != nil {
-		http.Error(w, err.Error(), 400)
+		http.Error(w, err.Error(), 500)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
