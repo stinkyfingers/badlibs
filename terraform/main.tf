@@ -5,7 +5,7 @@ variable "region" {
 }
 
 variable "profile" {
-  type = string
+  type    = string
   default = "" #TODO - change during local tf apply
 }
 
