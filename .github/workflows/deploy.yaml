@@ -15,10 +15,14 @@ jobs:
     timeout-minutes: 4
     defaults:
       run:
-        working-directory: terraform
+        working-directory: ./terraform
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+      - name: build lambda
+        working-directory: .
+        run: |
+          make build-lambda
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
       - name: Terraform Format
