@@ -26,9 +26,9 @@ jobs:
       - name: build
         working-directory: .
         run: |
-          GOOS=linux go build -o lambda lambda/main.go
+          GOOS=linux go build -o lambdabin lambda/main.go
           ls
-          zip -j lambda.zip lambda
+          zip lambda.zip lambdabin
           ls
           chmod 777 lambda.zip
       - name: Setup Terraform
