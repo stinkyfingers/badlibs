@@ -4,6 +4,11 @@ variable "region" {
   default = "us-west-1"
 }
 
+variable "profile" {
+  type = string
+  default = "" #TODO - change during local tf apply
+}
+
 # provider
 terraform {
   required_providers {
@@ -15,7 +20,7 @@ terraform {
 }
 
 provider "aws" {
-  profile = "jds"
+  profile = var.profile
   region  = var.region
 }
 
@@ -26,7 +31,7 @@ data "terraform_remote_state" "stinkyfingers" {
     bucket  = "remotebackend"
     key     = "stinkyfingers/terraform.tfstate"
     region  = "us-west-1"
-    profile = "jds"
+    profile = var.profile
   }
 }
 
@@ -176,7 +181,7 @@ terraform {
     bucket  = "remotebackend"
     key     = "badlibs/terraform.tfstate"
     region  = "us-west-1"
-    profile = "jds"
+    profile = var.profile
   }
 }
 
@@ -186,6 +191,6 @@ data "terraform_remote_state" "badlibs" {
     bucket  = "remotebackend"
     key     = "badlibs/terraform.tfstate"
     region  = "us-west-1"
-    profile = "jds"
+    profile = var.profile
   }
 }
