@@ -178,10 +178,10 @@ EOF
 # backend
 terraform {
   backend "s3" {
-    bucket  = "remotebackend"
-    key     = "badlibs/terraform.tfstate"
-    region  = "us-west-1"
-#    profile = var.profile
+    bucket = "remotebackend"
+    key    = "badlibs/terraform.tfstate"
+    region = "us-west-1"
+    #    profile = var.profile
   }
 }
 
