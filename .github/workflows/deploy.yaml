@@ -20,9 +20,15 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: build lambda
+        uses: actions/setup-go@v3
+        with:
+          go-version: '^1.17'
+      - name: build
         working-directory: .
         run: |
-          make build-lambda
+          GOOS=linux go build -o lambda lambda/main.go
+          zip -j lambda.zip lambda
+          chmod 777 lambda.zip
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
       - name: Terraform Format
