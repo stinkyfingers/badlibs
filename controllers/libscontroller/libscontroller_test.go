@@ -9,30 +9,29 @@ import (
 	"github.com/stretchr/testify/require"
 
 	libs "github.com/stinkyfingers/badlibs/models"
-
 )
 
 type mockStorage struct {
-	lib *libs.Lib
+	lib  *libs.Lib
 	libs []libs.Lib
-	err error
+	err  error
 }
 
 func (m *mockStorage) Get(id string) (*libs.Lib, error) {
 	return m.lib, m.err
 }
 
-func (m *mockStorage)All() ([]libs.Lib, error){
+func (m *mockStorage) All() ([]libs.Lib, error) {
 	return m.libs, m.err
 }
-func (m *mockStorage)Delete(id string) error {
+func (m *mockStorage) Delete(id string) error {
 	return m.err
 }
-func (m *mockStorage)Update(l *libs.Lib) (*libs.Lib, error) {
+func (m *mockStorage) Update(l *libs.Lib) (*libs.Lib, error) {
 	return m.lib, m.err
 
 }
-func (m *mockStorage)Create(l *libs.Lib) (*libs.Lib, error) {
+func (m *mockStorage) Create(l *libs.Lib) (*libs.Lib, error) {
 	return m.lib, m.err
 }
 
@@ -49,9 +48,9 @@ func TestAllLibs(t *testing.T) {
 	s.AllLibs(rec, req)
 	res := rec.Result()
 	defer res.Body.Close()
-	require.Equal(t, http.StatusOK,  res.StatusCode)
+	require.Equal(t, http.StatusOK, res.StatusCode)
 	var ls []libs.Lib
 	err := json.NewDecoder(res.Body).Decode(&ls)
-	require.Nil(t ,err)
+	require.Nil(t, err)
 	require.Equal(t, expected, ls)
 }

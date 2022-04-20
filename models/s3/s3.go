@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	libs "github.com/stinkyfingers/badlibs/models"
 
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/google/uuid"
 )
 
@@ -32,10 +33,11 @@ var (
 func NewS3Storage(profile string) (*S3Storage, error) {
 	sess, err := Session(profile, region)
 	if err != nil {
-	    return nil, err
+		return nil, err
 	}
 	client := s3.New(sess)
 	err = AssureDBBucket(client)
+	fmt.Println("BUCK", err, profile)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +130,7 @@ func (s *S3Storage) Get(id string) (*libs.Lib, error) {
 	return &lib, nil
 }
 
-func (s *S3Storage) All() ([]libs.Lib, error) {
+func (s *S3Storage) All(filter *libs.Lib) ([]libs.Lib, error) {
 	resp, err := s.client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
@@ -146,14 +148,22 @@ func (s *S3Storage) All() ([]libs.Lib, error) {
 	}
 	var output []libs.Lib
 	for _, lib := range dbMap {
+		if filter != nil {
+			if filter.ID != "" && filter.ID != lib.ID ||
+				filter.Title != "" && filter.Title != lib.Title ||
+				filter.Rating != "" && filter.Rating != lib.Rating ||
+				filter.User != "" && filter.User != lib.User ||
+				filter.Created != nil && !filter.Created.IsZero() && filter.Created.After(*filter.Created) {
+				continue
+			}
+		}
 		output = append(output, lib)
 	}
 	return output, err
 }
 
 func Session(profile, region string) (*session.Session, error) {
-	options := session.Options{Profile: profile}
-	sess, err := session.NewSessionWithOptions(options)
+	sess, err :=session.NewSession()
 	if err != nil {
 		return nil, err
 	}

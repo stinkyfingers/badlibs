@@ -1,11 +1,17 @@
 package main
 
 import (
+	"log"
+
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/stinkyfingers/badlibs/server"
 	"github.com/stinkyfingers/lambdify"
 )
 
 func main() {
-	lambda.Start(lambdify.Lambdify(server.NewMux()))
+	mux, err := server.NewMux()
+	if err != nil {
+	    log.Fatal(err)
+	}
+	lambda.Start(lambdify.Lambdify(mux))
 }

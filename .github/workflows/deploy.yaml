@@ -1,0 +1,20 @@
+name: deploy
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+    branches:
+      - '*'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+      timeout-minutes: 4
+      steps:
+        - name: Check out the repo
+          uses: actions/checkout@v2
+        - name: Setup Terraform
+          uses: hashicorp/setup-terraform@v1
+        - name: Terraform Format
+          id: fmt
+          run: terraform fmt -check

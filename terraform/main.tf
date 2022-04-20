@@ -5,6 +5,15 @@ variable "region" {
 }
 
 # provider
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.0"
+    }
+  }
+}
+
 provider "aws" {
   profile = "jds"
   region     = var.region
@@ -52,6 +61,11 @@ resource "aws_lambda_function" "badlibs_server" {
   handler          = "lambda-lambda"
   runtime          = "go1.x"
   source_code_hash = filebase64sha256("../lambda.zip")
+  environment {
+    variables = {
+      PROFILE = "jds"
+    }
+  }
 }
 
 # IAM
@@ -77,6 +91,30 @@ EOF
 resource "aws_iam_role_policy_attachment" "cloudwatch-attach" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_policy" "s3-policy" {
+  name = "badlibs-lambda-s3-policy"
+  description = "Grants lambda access to s3"
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:*"
+      ],
+      "Resource": "arn:aws:s3:::*"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "s3-policy-attach" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.s3-policy.arn
 }
 
 # ALB
@@ -109,7 +147,6 @@ priority = 2
 # db
 resource "aws_s3_bucket" "badlibs" {
   bucket = "badlibs"
-  acl = "private"
   policy = <<EOF
 {
   "Version": "2012-10-17",

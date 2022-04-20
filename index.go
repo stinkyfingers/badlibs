@@ -18,7 +18,7 @@ func main() {
 	fmt.Print("Running. \n")
 	rh, err := server.NewMux()
 	if err != nil {
-	    panic(err)
+		log.Fatal(err)
 	}
 
 	err = http.ListenAndServe(port, rh)

@@ -3,3 +3,7 @@ terraform/terraform.tfstate.backup
 lambda-lambda
 lambda.zip
 .env
+vendor
+.idea
+foo.json
+terraform/terraform.tfstate*

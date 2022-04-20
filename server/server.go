@@ -2,20 +2,23 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/stinkyfingers/badlibs/controllers/libscontroller"
+	libs "github.com/stinkyfingers/badlibs/models"
+	filelibs "github.com/stinkyfingers/badlibs/models/file"
 	s3libs "github.com/stinkyfingers/badlibs/models/s3"
 )
 
 // NewMux returns the router
 func NewMux() (http.Handler, error) {
-	s3Storage, err := s3libs.NewS3Storage(os.Getenv("PROFILE"))
+	storage, err := getStorage()
 	if err != nil {
-	    return nil, err
+		return nil, err
 	}
-	s := libscontroller.NewServer(s3Storage)
+	s := libscontroller.NewServer(storage)
 
 	mux := http.NewServeMux()
 	mux.Handle("/lib/create", middleware(s.CreateLib))
@@ -52,4 +55,14 @@ func status(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(j)
+}
+
+func getStorage() (libs.LibStorer, error) {
+	if filename := os.Getenv("FILE"); filename != "" {
+		return filelibs.NewFileStorage(filename)
+	}
+	if profile := os.Getenv("PROFILE"); profile != "" {
+		return s3libs.NewS3Storage(profile)
+	}
+	return nil, fmt.Errorf("specify env vars for storage type")
 }
