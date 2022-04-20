@@ -50,5 +50,5 @@ jobs:
       - name: Terraform Apply
         id: apply
         if: github.event_name == 'pull_request' # TODO
-        run: terraform apply -no-color -input=false
+        run: terraform apply -no-color -input=false -auto-approve
         continue-on-error: false
