@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
 	libs "github.com/stinkyfingers/badlibs/models"
@@ -37,7 +36,6 @@ func NewS3Storage(profile string) (*S3Storage, error) {
 	}
 	client := s3.New(sess)
 	err = AssureDBBucket(client)
-	fmt.Println("BUCK", err, profile)
 	if err != nil {
 		return nil, err
 	}
@@ -162,8 +160,12 @@ func (s *S3Storage) All(filter *libs.Lib) ([]libs.Lib, error) {
 	return output, err
 }
 
-func Session(profile, region string) (*session.Session, error) {
-	sess, err :=session.NewSession()
+func Session(profile, region string) (sess *session.Session, err error) {
+	if profile != "" {
+		sess, err = session.NewSessionWithOptions(session.Options{Profile: profile})
+	} else {
+		sess, err = session.NewSession()
+	}
 	if err != nil {
 		return nil, err
 	}

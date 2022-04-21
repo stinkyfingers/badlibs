@@ -58,11 +58,16 @@ func status(w http.ResponseWriter, r *http.Request) {
 }
 
 func getStorage() (libs.LibStorer, error) {
-	if filename := os.Getenv("FILE"); filename != "" {
+	switch os.Getenv("STORAGE") {
+	case "file":
+		filename := "foo.json"
+		if envfile := os.Getenv("FILE"); envfile != "" {
+			filename = envfile
+		}
 		return filelibs.NewFileStorage(filename)
+	case "s3":
+		return s3libs.NewS3Storage( os.Getenv("PROFILE"))
+	default:
+		return nil, fmt.Errorf("specify env vars for STORAGE (and PROFILE, FILE")
 	}
-	if profile := os.Getenv("PROFILE"); profile != "" {
-		return s3libs.NewS3Storage(profile)
-	}
-	return nil, fmt.Errorf("specify env vars for storage type")
 }

@@ -68,7 +68,7 @@ resource "aws_lambda_function" "badlibs_server" {
   source_code_hash = filebase64sha256("../lambda.zip")
   environment {
     variables = {
-      PROFILE = "jds"
+      STORAGE = "s3"
     }
   }
 }
