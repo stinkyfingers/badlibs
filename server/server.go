@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/stinkyfingers/badlibs/auth"
+	"log"
 	"net/http"
 	"os"
 
@@ -50,6 +51,7 @@ func cors(handler func(w http.ResponseWriter, r *http.Request)) http.Handler {
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
+	log.Print("HEALTH")
 	status := struct {
 		Health string `json:"health"`
 	}{

@@ -23,6 +23,7 @@ func NewServer(storage libs.LibStorer) *Server {
 }
 
 func (s *Server) GetLib(w http.ResponseWriter, r *http.Request) {
+	log.Print("GET")
 	id := r.URL.Query().Get("id")
 	l, err := s.Storage.Get(id)
 	if err != nil {
@@ -122,6 +123,7 @@ func (s *Server) UpdateLib(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) AllLibs(w http.ResponseWriter, r *http.Request) {
+	log.Print("ALL")
 	filter, err := getFilter(r.URL.Query())
 	if err != nil {
 		http.Error(w, err.Error(), 400)
