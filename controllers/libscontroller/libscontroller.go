@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+	"context"
 
 	libs "github.com/stinkyfingers/badlibs/models"
 )
@@ -69,7 +70,17 @@ func (s *Server) CreateLib(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) DeleteLib(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
-	err := s.Storage.Delete(id)
+	l, err := s.Storage.Get(id)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	if ok := authorize(r.Context(), *l); !ok {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	err = s.Storage.Delete(id)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
@@ -91,7 +102,10 @@ func (s *Server) UpdateLib(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-
+	if ok := authorize(r.Context(), l); !ok {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
 	updatedLib, err := s.Storage.Update(&l)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
@@ -143,7 +157,7 @@ func getFilter(values url.Values) (*libs.Lib, error) {
 		lib.Rating = values.Get("rating")
 	}
 	if values.Has("user") {
-		lib.User = values.Get("user")
+		lib.User.ID = values.Get("userId")
 	}
 	if values.Has("created") {
 		createdStr := values.Get("created")
@@ -154,4 +168,11 @@ func getFilter(values url.Values) (*libs.Lib, error) {
 		lib.Created = &created
 	}
 	return &lib, nil
+}
+
+func authorize(ctx context.Context, lib libs.Lib) bool {
+	if ctx.Value("userId") != lib.User.ID {
+		return false
+	}
+	return true
 }

@@ -12,7 +12,13 @@ type Lib struct {
 	Rank    int        `json:"rank"`  // average rank: 1-10
 	Ranks   int        `json:"ranks"` // number of times ranked
 	Created *time.Time `json:"created"`
-	User    string     `json:"user"`
+	User    User     `json:"user"`
+}
+
+type User struct {
+	ID string `json:"id"`
+	Name string `json:"name"`
+	Email string `json:"email"`
 }
 
 type LibStorer interface {

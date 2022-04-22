@@ -11,7 +11,7 @@ import (
 func main() {
 	mux, err := server.NewMux()
 	if err != nil {
-	    log.Fatal(err)
+		log.Fatal(err)
 	}
 	lambda.Start(lambdify.Lambdify(mux))
 }

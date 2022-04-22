@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/stinkyfingers/badlibs/auth"
 	"net/http"
 	"os"
 
@@ -14,6 +15,11 @@ import (
 
 // NewMux returns the router
 func NewMux() (http.Handler, error) {
+	authentication, err := getAuthentication("GCP")
+	if err != nil {
+	    return nil, err
+	}
+
 	storage, err := getStorage()
 	if err != nil {
 		return nil, err
@@ -21,16 +27,16 @@ func NewMux() (http.Handler, error) {
 	s := libscontroller.NewServer(storage)
 
 	mux := http.NewServeMux()
-	mux.Handle("/lib/create", middleware(s.CreateLib))
-	mux.Handle("/lib/update", middleware(s.UpdateLib))
-	mux.Handle("/lib/delete", middleware(s.DeleteLib))
-	mux.Handle("/lib/get", middleware(s.GetLib))
-	mux.Handle("/lib/all", middleware(s.AllLibs))
-	mux.Handle("/health", middleware(status))
+	mux.Handle("/lib/create", cors(authentication.Middleware(s.CreateLib)))
+	mux.Handle("/lib/update", cors(authentication.Middleware(s.UpdateLib)))
+	mux.Handle("/lib/delete", cors(authentication.Middleware(s.DeleteLib)))
+	mux.Handle("/lib/get", cors(s.GetLib))
+	mux.Handle("/lib/all", cors(s.AllLibs))
+	mux.Handle("/health", cors(status))
 	return mux, nil
 }
 
-func middleware(handler func(w http.ResponseWriter, r *http.Request)) http.Handler {
+func cors(handler func(w http.ResponseWriter, r *http.Request)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
@@ -66,8 +72,17 @@ func getStorage() (libs.LibStorer, error) {
 		}
 		return filelibs.NewFileStorage(filename)
 	case "s3":
-		return s3libs.NewS3Storage( os.Getenv("PROFILE"))
+		return s3libs.NewS3Storage(os.Getenv("PROFILE"))
 	default:
 		return nil, fmt.Errorf("specify env vars for STORAGE (and PROFILE, FILE")
+	}
+}
+
+func getAuthentication(kind string) (auth.Auth, error) {
+	switch kind {
+	case "GCP":
+		return &auth.GCP{}, nil
+	default:
+		return nil, fmt.Errorf("%s has not been implemented", kind)
 	}
 }

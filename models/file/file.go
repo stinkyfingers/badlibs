@@ -103,7 +103,7 @@ func (s *FileStorage) All(filter *libs.Lib) ([]libs.Lib, error) {
 			if filter.ID != "" && filter.ID != lib.ID ||
 				filter.Title != "" && filter.Title != lib.Title ||
 				filter.Rating != "" && filter.Rating != lib.Rating ||
-				filter.User != "" && filter.User != lib.User ||
+				filter.User.ID != "" && filter.User.ID != lib.User.ID ||
 				filter.Created != nil && !filter.Created.IsZero() && filter.Created.After(*filter.Created) {
 				continue
 			}
