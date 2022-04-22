@@ -33,14 +33,7 @@ func NewMux() (http.Handler, error) {
 	mux.Handle("/lib/delete", cors(authentication.Middleware(s.DeleteLib)))
 	mux.Handle("/lib/get", cors(s.GetLib))
 	mux.Handle("/lib/all", cors(s.AllLibs))
-
-	mux.Handle("/create", cors(authentication.Middleware(s.CreateLib)))
-	mux.Handle("/update", cors(authentication.Middleware(s.UpdateLib)))
-	mux.Handle("/delete", cors(authentication.Middleware(s.DeleteLib)))
-	mux.Handle("/get", cors(s.GetLib))
-	mux.Handle("/all", cors(s.AllLibs))
 	mux.Handle("/health", cors(status))
-	mux.Handle("/foo", cors(s.AllLibs))
 	return mux, nil
 }
 

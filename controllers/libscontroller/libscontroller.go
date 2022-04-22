@@ -123,7 +123,6 @@ func (s *Server) UpdateLib(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) AllLibs(w http.ResponseWriter, r *http.Request) {
-	log.Print("ALL")
 	filter, err := getFilter(r.URL.Query())
 	if err != nil {
 		http.Error(w, err.Error(), 400)

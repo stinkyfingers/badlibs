@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -23,7 +22,6 @@ func Lambdify(mux http.Handler) func(events.ALBTargetGroupRequest) (events.ALBTa
 		queries = strings.Replace(queries, "&", "?", 1)
 
 		path := ev.Path[strings.Index(strings.TrimLeft(ev.Path, "/"), "/")+1:]
-		log.Print("path", path)
 
 		var body io.Reader
 		var contentType string
