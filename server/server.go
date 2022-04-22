@@ -34,7 +34,7 @@ func NewMux() (http.Handler, error) {
 	mux.Handle("/lib/get", cors(s.GetLib))
 	mux.Handle("/lib/all", cors(s.AllLibs))
 	mux.Handle("/health", cors(status))
-	mux.Handle("/foo", cors(status))
+	mux.Handle("/foo", cors(s.AllLibs))
 	return mux, nil
 }
 
