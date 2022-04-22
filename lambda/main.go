@@ -5,7 +5,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/stinkyfingers/badlibs/server"
-	"github.com/stinkyfingers/lambdify"
+	"github.com/stinkyfingers/badlibs/lambdify"
 )
 
 func main() {
