@@ -37,9 +37,23 @@ func NewMux() (http.Handler, error) {
 	return mux, nil
 }
 
+func isPermittedOrigin(origin string) string {
+	var permittedOrigins = []string{
+		"http://localhost:3000",
+		"https://radlibs.john-shenk.com",
+	}
+	for _, permittedOrigin := range permittedOrigins {
+		if permittedOrigin == origin {
+			return origin
+		}
+	}
+	return ""
+}
+
 func cors(handler func(w http.ResponseWriter, r *http.Request)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		permittedOrigin := isPermittedOrigin(r.Header.Get("Origin"))
+		w.Header().Set("Access-Control-Allow-Origin", permittedOrigin)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		if r.Method == "OPTIONS" {
