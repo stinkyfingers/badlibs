@@ -1,13 +1,13 @@
 package libscontroller
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"time"
-	"context"
 
 	libs "github.com/stinkyfingers/badlibs/models"
 )
@@ -23,7 +23,6 @@ func NewServer(storage libs.LibStorer) *Server {
 }
 
 func (s *Server) GetLib(w http.ResponseWriter, r *http.Request) {
-	log.Print("GET")
 	id := r.URL.Query().Get("id")
 	l, err := s.Storage.Get(id)
 	if err != nil {
@@ -136,6 +135,29 @@ func (s *Server) AllLibs(w http.ResponseWriter, r *http.Request) {
 	j, err := json.Marshal(ls)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(j)
+	return
+}
+
+func (s *Server) UpsertAuth(w http.ResponseWriter, r *http.Request) {
+	var a libs.Auth
+	err := json.NewDecoder(r.Body).Decode(&a)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	a.Expires = time.Now().Add(time.Hour * 24)
+	updatedAuth, err := s.Storage.UpsertAuth(&a)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	j, err := json.Marshal(updatedAuth)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

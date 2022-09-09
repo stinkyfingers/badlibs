@@ -16,12 +16,11 @@ import (
 
 // NewMux returns the router
 func NewMux() (http.Handler, error) {
-	authentication, err := getAuthentication("GCP")
-	if err != nil {
-	    return nil, err
-	}
-
 	storage, err := getStorage()
+	if err != nil {
+		return nil, err
+	}
+	authentication, err := getAuthentication("INTERNAL", storage)
 	if err != nil {
 		return nil, err
 	}
@@ -33,6 +32,8 @@ func NewMux() (http.Handler, error) {
 	mux.Handle("/lib/delete", cors(authentication.Middleware(s.DeleteLib)))
 	mux.Handle("/lib/get", cors(s.GetLib))
 	mux.Handle("/lib/all", cors(s.AllLibs))
+	mux.Handle("/auth/upsert", cors(s.UpsertAuth))
+	mux.Handle("/auth/health", cors(authentication.Middleware(status)))
 	mux.Handle("/health", cors(status))
 	return mux, nil
 }
@@ -94,10 +95,12 @@ func getStorage() (libs.LibStorer, error) {
 	}
 }
 
-func getAuthentication(kind string) (auth.Auth, error) {
+func getAuthentication(kind string, storage libs.LibStorer) (auth.Auth, error) {
 	switch kind {
 	case "GCP":
 		return &auth.GCP{}, nil
+	case "INTERNAL":
+		return &auth.Internal{Storage: storage}, nil
 	default:
 		return nil, fmt.Errorf("%s has not been implemented", kind)
 	}

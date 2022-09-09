@@ -152,27 +152,27 @@ resource "aws_lb_listener_rule" "badlibs_server" {
 # db
 resource "aws_s3_bucket" "badlibs" {
   bucket = "badlibs"
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-      {
-          "Sid": "Lambda Read",
-          "Effect": "Allow",
-          "Principal": {
-              "AWS": "${aws_iam_role.lambda_role.arn}"
-          },
-          "Action": [
-            "s3:*"
-          ],
-          "Resource": [
-            "arn:aws:s3:::badlibs",
-            "arn:aws:s3:::badlibs/*"
-          ]
-      }
-  ]
 }
-EOF
+
+resource "aws_s3_bucket_policy" "badlibs" {
+  bucket = "badlibs"
+  policy = data.aws_iam_policy_document.allow_lambda.json
+}
+
+data "aws_iam_policy_document" "allow_lambda" {
+  statement {
+    principals {
+      type        = "AWS"
+      identifiers = [aws_iam_role.lambda_role.arn]
+    }
+    actions = [
+      "s3:*",
+    ],
+    resources = [
+      "arn:aws:s3:::badlibs",
+      "arn:aws:s3:::badlibs/*"
+    ]
+  }
 }
 
 # backend

@@ -21,9 +21,12 @@ type S3Storage struct {
 
 type DBMap map[string]libs.Lib
 
+type AuthMap map[string]libs.Auth
+
 const bucket = "badlibs"
 const key = "db.json"
 const region = "us-west-1"
+const authKey = "auth.json"
 
 var (
 	ErrNilObject = errors.New("nil object")
@@ -35,7 +38,11 @@ func NewS3Storage(profile string) (*S3Storage, error) {
 		return nil, err
 	}
 	client := s3.New(sess)
-	err = AssureDBBucket(client)
+	err = AssureBucket(client, key)
+	if err != nil {
+		return nil, err
+	}
+	err = AssureBucket(client, authKey)
 	if err != nil {
 		return nil, err
 	}
@@ -160,6 +167,54 @@ func (s *S3Storage) All(filter *libs.Lib) ([]libs.Lib, error) {
 	return output, err
 }
 
+func (s *S3Storage) GetAuth(token string) (*libs.Auth, error) {
+	resp, err := s.client.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(authKey),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if resp == nil {
+		return nil, ErrNilObject
+	}
+	var auths AuthMap
+	err = json.NewDecoder(resp.Body).Decode(&auths)
+	if err != nil {
+		return nil, err
+	}
+	auth := auths[token]
+	return &auth, nil
+}
+
+func (s *S3Storage) UpsertAuth(a *libs.Auth) (*libs.Auth, error) {
+	resp, err := s.client.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(authKey),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var auths AuthMap
+	err = json.NewDecoder(resp.Body).Decode(&auths)
+	if err != nil {
+		return nil, err
+	}
+	auths[a.OIDCToken] = *a
+
+	j, err := json.Marshal(auths)
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.client.PutObject(&s3.PutObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(authKey),
+		Body:   bytes.NewReader(j),
+	})
+	return a, err
+}
+
 func Session(profile, region string) (sess *session.Session, err error) {
 	if profile != "" {
 		sess, err = session.NewSessionWithOptions(session.Options{Profile: profile})
@@ -174,7 +229,7 @@ func Session(profile, region string) (sess *session.Session, err error) {
 	return sess, nil
 }
 
-func AssureDBBucket(client *s3.S3) error {
+func AssureBucket(client *s3.S3, key string) error {
 	_, err := client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),

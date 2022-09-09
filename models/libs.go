@@ -12,12 +12,12 @@ type Lib struct {
 	Rank    int        `json:"rank"`  // average rank: 1-10
 	Ranks   int        `json:"ranks"` // number of times ranked
 	Created *time.Time `json:"created"`
-	User    User     `json:"user"`
+	User    User       `json:"user"`
 }
 
 type User struct {
-	ID string `json:"id"`
-	Name string `json:"name"`
+	ID    string `json:"id"`
+	Name  string `json:"name"`
 	Email string `json:"email"`
 }
 
@@ -27,4 +27,5 @@ type LibStorer interface {
 	Delete(id string) error
 	Update(l *Lib) (*Lib, error)
 	Create(l *Lib) (*Lib, error)
+	AuthStorer
 }

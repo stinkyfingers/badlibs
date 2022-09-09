@@ -15,6 +15,7 @@ type FileStorage struct {
 }
 
 type DBMap map[string]libs.Lib
+type AuthMap map[string]libs.Auth
 
 func NewFileStorage(file string) (*FileStorage, error) {
 	return &FileStorage{
@@ -111,4 +112,41 @@ func (s *FileStorage) All(filter *libs.Lib) ([]libs.Lib, error) {
 		output = append(output, lib)
 	}
 	return output, err
+}
+
+func (s *FileStorage) GetAuth(token string) (*libs.Auth, error) {
+	f, err := os.Open(s.file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	var auths AuthMap
+	err = json.NewDecoder(f).Decode(&auths)
+	if err != nil {
+		return nil, err
+	}
+	auth := auths[token]
+	return &auth, nil
+}
+
+func (s *FileStorage) UpsertAuth(a *libs.Auth) (*libs.Auth, error) {
+	f, err := os.Open(s.file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var auths AuthMap
+	err = json.NewDecoder(f).Decode(&auths)
+	if err != nil {
+		return nil, err
+	}
+	auths[a.OIDCToken] = *a
+	f.Close()
+	f, err = os.Create(s.file)
+	if err != nil {
+		return nil, err
+	}
+	err = json.NewEncoder(f).Encode(auths)
+	return a, err
 }
