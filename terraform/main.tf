@@ -166,8 +166,8 @@ data "aws_iam_policy_document" "allow_lambda" {
       identifiers = [aws_iam_role.lambda_role.arn]
     }
     actions = [
-      "s3:*",
-    ],
+      "s3:*"
+    ]
     resources = [
       "arn:aws:s3:::badlibs",
       "arn:aws:s3:::badlibs/*"
