@@ -2,32 +2,59 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/stinkyfingers/badlibs/auth"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/stinkyfingers/badlibs/controllers/libscontroller"
-	"github.com/stinkyfingers/badlibs/models/libs"
+	libs "github.com/stinkyfingers/badlibs/models"
+	filelibs "github.com/stinkyfingers/badlibs/models/file"
+	s3libs "github.com/stinkyfingers/badlibs/models/s3"
 )
 
 // NewMux returns the router
-func NewMux() http.Handler {
-	err := libs.AssureDBBucket()
+func NewMux() (http.Handler, error) {
+	storage, err := getStorage()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+	authentication, err := getAuthentication("INTERNAL", storage)
+	if err != nil {
+		return nil, err
+	}
+	s := libscontroller.NewServer(storage)
 
 	mux := http.NewServeMux()
-	mux.Handle("/lib/create", middleware(libscontroller.CreateLib))
-	mux.Handle("/lib/update", middleware(libscontroller.UpdateLib))
-	mux.Handle("/lib/delete", middleware(libscontroller.DeleteLib))
-	mux.Handle("/lib/get", middleware(libscontroller.GetLib))
-	mux.Handle("/lib/all", middleware(libscontroller.AllLibs))
-	mux.Handle("/health", middleware(status))
-	return mux
+	mux.Handle("/lib/create", cors(authentication.Middleware(s.CreateLib)))
+	mux.Handle("/lib/update", cors(authentication.Middleware(s.UpdateLib)))
+	mux.Handle("/lib/delete", cors(authentication.Middleware(s.DeleteLib)))
+	mux.Handle("/lib/get", cors(s.GetLib))
+	mux.Handle("/lib/all", cors(s.AllLibs))
+	mux.Handle("/auth/upsert", cors(s.UpsertAuth))
+	mux.Handle("/auth/health", cors(authentication.Middleware(status)))
+	mux.Handle("/health", cors(status))
+	return mux, nil
 }
 
-func middleware(handler func(w http.ResponseWriter, r *http.Request)) http.Handler {
+func isPermittedOrigin(origin string) string {
+	var permittedOrigins = []string{
+		"http://localhost:3000",
+		"https://radlibs.john-shenk.com",
+	}
+	for _, permittedOrigin := range permittedOrigins {
+		if permittedOrigin == origin {
+			return origin
+		}
+	}
+	return ""
+}
+
+func cors(handler func(w http.ResponseWriter, r *http.Request)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		permittedOrigin := isPermittedOrigin(r.Header.Get("Origin"))
+		w.Header().Set("Access-Control-Allow-Origin", permittedOrigin)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		if r.Method == "OPTIONS" {
@@ -39,6 +66,7 @@ func middleware(handler func(w http.ResponseWriter, r *http.Request)) http.Handl
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
+	log.Print("HEALTH")
 	status := struct {
 		Health string `json:"health"`
 	}{
@@ -50,4 +78,30 @@ func status(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(j)
+}
+
+func getStorage() (libs.LibStorer, error) {
+	switch os.Getenv("STORAGE") {
+	case "file":
+		filename := "foo.json"
+		if envfile := os.Getenv("FILE"); envfile != "" {
+			filename = envfile
+		}
+		return filelibs.NewFileStorage(filename)
+	case "s3":
+		return s3libs.NewS3Storage(os.Getenv("PROFILE"))
+	default:
+		return nil, fmt.Errorf("specify env vars for STORAGE (and PROFILE, FILE")
+	}
+}
+
+func getAuthentication(kind string, storage libs.LibStorer) (auth.Auth, error) {
+	switch kind {
+	case "GCP":
+		return &auth.GCP{}, nil
+	case "INTERNAL":
+		return &auth.Internal{Storage: storage}, nil
+	default:
+		return nil, fmt.Errorf("%s has not been implemented", kind)
+	}
 }

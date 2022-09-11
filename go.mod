@@ -9,6 +9,8 @@ require (
 	github.com/google/uuid v1.1.2
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a
 	github.com/stinkyfingers/lambdify v0.0.0-20200108214125-0613a4ed9b35
+	github.com/stretchr/testify v1.7.1 // indirect
 	go.mongodb.org/mongo-driver v1.4.4
+	google.golang.org/api v0.75.0 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20141107142503-e2e914857713
 )
