@@ -69,6 +69,7 @@ resource "aws_lambda_function" "badlibs_server" {
   environment {
     variables = {
       STORAGE = "s3"
+      AUTH = "GCP"
     }
   }
 }

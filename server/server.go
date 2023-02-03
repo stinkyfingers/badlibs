@@ -3,10 +3,11 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stinkyfingers/badlibs/auth"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/stinkyfingers/badlibs/auth"
 
 	"github.com/stinkyfingers/badlibs/controllers/libscontroller"
 	libs "github.com/stinkyfingers/badlibs/models"
@@ -20,7 +21,7 @@ func NewMux() (http.Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	authentication, err := getAuthentication("INTERNAL", storage)
+	authentication, err := getAuthentication(os.Getenv("AUTH"), storage)
 	if err != nil {
 		return nil, err
 	}
@@ -66,8 +67,8 @@ func cors(handler func(w http.ResponseWriter, r *http.Request)) http.Handler {
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
-	log.Print("HEALTH")
 	status := struct {
+		g
 		Health string `json:"health"`
 	}{
 		"healthy",
@@ -100,8 +101,9 @@ func getAuthentication(kind string, storage libs.LibStorer) (auth.Auth, error) {
 	case "GCP":
 		return &auth.GCP{}, nil
 	case "INTERNAL":
-		return &auth.Internal{Storage: storage}, nil
+		fallthrough
 	default:
-		return nil, fmt.Errorf("%s has not been implemented", kind)
+		log.Println("defaulting to internal auth")
+		return &auth.Internal{Storage: storage}, nil
 	}
 }
