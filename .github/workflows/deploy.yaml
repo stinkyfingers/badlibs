@@ -18,7 +18,7 @@ jobs:
         working-directory: ./terraform
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: build lambda
         uses: actions/setup-go@v3
         with:
@@ -32,7 +32,7 @@ jobs:
           ls
           chmod 777 lambda.zip
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v2
       - name: Terraform Format
         id: fmt
         run: terraform fmt -check
