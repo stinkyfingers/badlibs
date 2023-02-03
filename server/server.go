@@ -68,7 +68,6 @@ func cors(handler func(w http.ResponseWriter, r *http.Request)) http.Handler {
 
 func status(w http.ResponseWriter, r *http.Request) {
 	status := struct {
-		g
 		Health string `json:"health"`
 	}{
 		"healthy",
