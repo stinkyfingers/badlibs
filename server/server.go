@@ -55,8 +55,8 @@ func isPermittedOrigin(origin string) string {
 
 func cors(handler func(w http.ResponseWriter, r *http.Request)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		permittedOrigin := isPermittedOrigin(r.Header.Get("Origin"))
-		w.Header().Set("Access-Control-Allow-Origin", permittedOrigin)
+		//permittedOrigin := isPermittedOrigin(r.Header.Get("Origin"))
+		w.Header().Set("Access-Control-Allow-Origin", "*") // TODO
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		if r.Method == "OPTIONS" {
