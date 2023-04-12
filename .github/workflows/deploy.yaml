@@ -26,7 +26,7 @@ jobs:
       - name: build
         working-directory: .
         run: |
-          GOOS=linux go build -o lambda-lambda lambda/main.go
+          GOOS=linux CGO_ENALBED=0 go build -o lambda-lambda lambda/main.go
           ls
           zip lambda.zip lambda-lambda
           ls
