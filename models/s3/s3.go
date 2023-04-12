@@ -158,7 +158,8 @@ func (s *S3Storage) All(filter *libs.Lib) ([]libs.Lib, error) {
 				filter.Title != "" && filter.Title != lib.Title ||
 				filter.Rating != "" && filter.Rating != lib.Rating ||
 				filter.User.ID != "" && filter.User.ID != lib.User.ID ||
-				filter.Created != nil && !filter.Created.IsZero() && filter.Created.After(*filter.Created) {
+				filter.Created != nil && !filter.Created.IsZero() && filter.Created.After(*filter.Created) ||
+				filter.Domain != "" && filter.Domain != lib.Domain {
 				continue
 			}
 		}

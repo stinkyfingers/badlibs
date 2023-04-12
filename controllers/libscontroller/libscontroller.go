@@ -190,6 +190,10 @@ func getFilter(values url.Values) (*libs.Lib, error) {
 		}
 		lib.Created = &created
 	}
+	if values.Has("domain") {
+		lib.Domain = values.Get("domain")
+	}
+	
 	return &lib, nil
 }
 

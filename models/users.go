@@ -4,6 +4,12 @@ import (
 	"time"
 )
 
+type User struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
 type Auth struct {
 	User      User      `json:"user"`
 	OIDCToken string    `json:"token"`
