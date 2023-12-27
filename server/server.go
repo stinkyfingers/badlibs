@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/stinkyfingers/badlibs/auth"
 
@@ -41,12 +42,13 @@ func NewMux() (http.Handler, error) {
 
 func isPermittedOrigin(origin string) string {
 	var permittedOrigins = []string{
-		"http://localhost:3000",
-		"https://radlibs.john-shenk.com",
-		"https://chadedwardsband.com",
+		"localhost:3000",
+		"badlibs.john-shenk",
+		"radlibs.john-shenk",
+		"chadedwardsband",
 	}
 	for _, permittedOrigin := range permittedOrigins {
-		if permittedOrigin == origin {
+		if strings.Contains(origin, permittedOrigin) {
 			return origin
 		}
 	}
